@@ -248,6 +248,7 @@ test_expect_success 'git commit-graph verify' '
 '
 
 NUM_COMMITS=9
+NUM_OCTOPUS_EDGES=2
 HASH_LEN=20
 GRAPH_BYTE_VERSION=4
 GRAPH_BYTE_HASH=5
@@ -274,6 +275,10 @@ GRAPH_BYTE_COMMIT_EXTRA_PARENT=`expr $GRAPH_COMMIT_DATA_OFFSET + $HASH_LEN + 4`
 GRAPH_BYTE_COMMIT_WRONG_PARENT=`expr $GRAPH_COMMIT_DATA_OFFSET + $HASH_LEN + 3`
 GRAPH_BYTE_COMMIT_GENERATION=`expr $GRAPH_COMMIT_DATA_OFFSET + $HASH_LEN + 8`
 GRAPH_BYTE_COMMIT_DATE=`expr $GRAPH_COMMIT_DATA_OFFSET + $HASH_LEN + 12`
+GRAPH_COMMIT_DATA_WIDTH=`expr $HASH_LEN + 16`
+GRAPH_OCTOPUS_DATA_OFFSET=`expr $GRAPH_COMMIT_DATA_OFFSET + \
+				$GRAPH_COMMIT_DATA_WIDTH \* $NUM_COMMITS`
+GRAPH_BYTE_OCTOPUS=`expr $GRAPH_OCTOPUS_DATA_OFFSET + 4`
 
 # usage: corrupt_graph_and_verify <position> <data> <string>
 # Manipulates the commit-graph file at the position
@@ -376,6 +381,11 @@ test_expect_success 'detect incorrect generation number' '
 test_expect_success 'detect incorrect commit date' '
 	corrupt_graph_and_verify $GRAPH_BYTE_COMMIT_DATE "\01" \
 		"commit date"
+'
+
+test_expect_success 'detect incorrect parent for octopus merge' '
+	corrupt_graph_and_verify $GRAPH_BYTE_OCTOPUS "\01" \
+		"invalid parent"
 '
 
 test_done
