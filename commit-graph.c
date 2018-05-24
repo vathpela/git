@@ -824,3 +824,29 @@ void write_commit_graph(const char *obj_dir,
 	oids.alloc = 0;
 	oids.nr = 0;
 }
+
+static int verify_commit_graph_error;
+
+static void graph_report(const char *fmt, ...)
+{
+	va_list ap;
+	struct strbuf sb = STRBUF_INIT;
+	verify_commit_graph_error = 1;
+
+	va_start(ap, fmt);
+	strbuf_vaddf(&sb, fmt, ap);
+
+	fprintf(stderr, "%s\n", sb.buf);
+	strbuf_release(&sb);
+	va_end(ap);
+}
+
+int verify_commit_graph(struct commit_graph *g)
+{
+	if (!g) {
+		graph_report("no commit-graph file loaded");
+		return 1;
+	}
+
+	return verify_commit_graph_error;
+}
