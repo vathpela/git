@@ -910,6 +910,7 @@ int verify_commit_graph(struct commit_graph *g)
 	for (i = 0; i < g->num_commits; i++) {
 		struct commit *graph_commit, *odb_commit;
 		struct commit_list *graph_parents, *odb_parents;
+		uint32_t max_generation = 0;
 
 		hashcpy(cur_oid.hash, g->chunk_oid_lookup + g->hash_len * i);
 
@@ -944,6 +945,9 @@ int verify_commit_graph(struct commit_graph *g)
 					     oid_to_hex(&graph_parents->item->object.oid),
 					     oid_to_hex(&odb_parents->item->object.oid));
 
+			if (graph_parents->item->generation > max_generation)
+				max_generation = graph_parents->item->generation;
+
 			graph_parents = graph_parents->next;
 			odb_parents = odb_parents->next;
 		}
@@ -951,6 +955,20 @@ int verify_commit_graph(struct commit_graph *g)
 		if (odb_parents != NULL)
 			graph_report("commit-graph parent list for commit %s terminates early",
 				     oid_to_hex(&cur_oid));
+
+		/*
+		 * If one of our parents has generation GENERATION_NUMBER_MAX, then
+		 * our generation is also GENERATION_NUMBER_MAX. Decrement to avoid
+		 * extra logic in the following condition.
+		 */
+		if (max_generation == GENERATION_NUMBER_MAX)
+			max_generation--;
+
+		if (graph_commit->generation != max_generation + 1)
+			graph_report("commit-graph generation for commit %s is %u != %u",
+				     oid_to_hex(&cur_oid),
+				     graph_commit->generation,
+				     max_generation + 1);
 	}
 
 	return verify_commit_graph_error;
