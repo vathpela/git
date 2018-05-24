@@ -16,6 +16,7 @@
 #include "streaming.h"
 #include "decorate.h"
 #include "packfile.h"
+#include "run-command.h"
 
 #define REACHABLE 0x0001
 #define SEEN      0x0002
@@ -45,6 +46,7 @@ static int name_objects;
 #define ERROR_REACHABLE 02
 #define ERROR_PACK 04
 #define ERROR_REFS 010
+#define ERROR_COMMIT_GRAPH 020
 
 static const char *describe_object(struct object *obj)
 {
@@ -815,5 +817,24 @@ int cmd_fsck(int argc, const char **argv, const char *prefix)
 	}
 
 	check_connectivity();
+
+	if (core_commit_graph) {
+		struct child_process commit_graph_verify = CHILD_PROCESS_INIT;
+		const char *verify_argv[] = { "commit-graph", "verify", NULL, NULL, NULL, NULL };
+		commit_graph_verify.argv = verify_argv;
+		commit_graph_verify.git_cmd = 1;
+
+		if (run_command(&commit_graph_verify))
+			errors_found |= ERROR_COMMIT_GRAPH;
+
+		prepare_alt_odb();
+		for (alt = alt_odb_list; alt; alt = alt->next) {
+			verify_argv[2] = "--object-dir";
+			verify_argv[3] = alt->path;
+			if (run_command(&commit_graph_verify))
+				errors_found |= ERROR_COMMIT_GRAPH;
+		}
+	}
+
 	return errors_found;
 }
