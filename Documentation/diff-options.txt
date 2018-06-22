@@ -276,7 +276,7 @@ plain::
 	that are added somewhere else in the diff. This mode picks up any
 	moved line, but it is not very useful in a review to determine
 	if a block of code was moved without permutation.
-blocks:
+blocks::
 	Blocks of moved text of at least 20 alphanumeric characters
 	are detected greedily. The detected blocks are
 	painted using either the 'color.diff.{old,new}Moved' color.
@@ -312,6 +312,7 @@ allow-indentation-change::
 	group the moved code blocks only into a block if the change in
 	whitespace is the same per line. This is incompatible with the
 	other modes.
+--
 
 --word-diff[=<mode>]::
 	Show a word diff, using the <mode> to delimit changed words.
