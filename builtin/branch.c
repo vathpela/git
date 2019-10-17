@@ -236,13 +236,17 @@ static int delete_branches(int argc, const char **argv, int force, int kinds,
 		if (kinds == FILTER_REFS_BRANCHES) {
 			const struct worktree *wt =
 				find_shared_symref("HEAD", name);
-			if (wt) {
+			int rc = -1;
+
+			if (wt && (rc = prune_worktree_if_missing(wt)) < 0) {
 				error(_("Cannot delete branch '%s' "
 					"checked out at '%s'"),
 				      bname.buf, wt->path);
 				ret = 1;
 				continue;
 			}
+			if (rc >= 0)
+				delete_worktrees_dir_if_empty();
 		}
 
 		target = resolve_refdup(name,
