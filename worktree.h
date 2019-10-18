@@ -137,4 +137,23 @@ void strbuf_worktree_ref(const struct worktree *wt,
 const char *worktree_ref(const struct worktree *wt,
 			 const char *refname);
 
+/*
+ * Clean up the 'worktrees' directory, if necessary.
+ */
+void delete_worktrees_dir_if_empty(void);
+
+/*
+ * Prune a worktree if it's older than expire.
+ * Returns 0 on success, < 0 on failure.
+ */
+int prune_worktree(const char *id, struct strbuf *reason, timestamp_t expire);
+
+/*
+ * Prune a worktree if it is not locked and is no longer present at the
+ * checked out location.
+ * Returns < 0 if the checkout is there, if the worktree is locked, or if
+ * pruning fails.
+ */
+int prune_worktree_if_missing(const struct worktree *wt);
+
 #endif
