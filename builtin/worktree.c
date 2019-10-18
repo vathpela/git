@@ -245,7 +245,7 @@ static void validate_worktree_add(const char *path, const struct add_opts *opts)
 	if (!wt)
 		goto done;
 
-	locked = !!worktree_lock_reason(wt);
+	locked = is_worktree_locked(wt);
 	if ((!locked && opts->force) || (locked && opts->force > 1)) {
 		if (delete_git_dir(wt->id))
 		    die(_("unable to re-add worktree '%s'"), path);

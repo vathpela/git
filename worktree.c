@@ -244,6 +244,22 @@ int is_main_worktree(const struct worktree *wt)
 	return !wt->id;
 }
 
+int is_worktree_locked(const struct worktree *wt)
+{
+	struct strbuf path = STRBUF_INIT;
+	int locked = 0;
+
+	if (wt->lock_reason_valid && wt->lock_reason)
+		return 1;
+
+	strbuf_addstr(&path, worktree_git_path(wt, "locked"));
+	if (file_exists(path.buf))
+		locked = 1;
+
+	strbuf_release(&path);
+	return locked;
+}
+
 const char *worktree_lock_reason(struct worktree *wt)
 {
 	assert(!is_main_worktree(wt));

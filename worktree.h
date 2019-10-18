@@ -57,6 +57,11 @@ struct worktree *find_worktree(struct worktree **list,
 int is_main_worktree(const struct worktree *wt);
 
 /*
+ * Return true if the given worktree is locked
+ */
+int is_worktree_locked(const struct worktree *wt);
+
+/*
  * Return the reason string if the given worktree is locked or NULL
  * otherwise.
  */
